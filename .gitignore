@@ -42,3 +42,11 @@ terraform.rc
 # Optional: ignore plan files saved before destroying Terraform configuration
 # Uncomment the line below if you want to ignore planout files.
 # planout
+# Private keys (GitHub App PEM, etc.)
+*.pem
+
+# Backend config (contains bucket + role ARN; use backend.hcl.example)
+backend.hcl
+
+# Kiro spec/working files
+.kiro/

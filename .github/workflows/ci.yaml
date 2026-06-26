@@ -1,0 +1,45 @@
+name: Terraform CI
+
+# Runs Terraform formatting, validation, and tests on the self-hosted ARC
+# runner scale set provisioned by this repository. This serves as both the
+# CI gate and an end-to-end validation that the self-hosted runners work.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  terraform:
+    name: Validate & Test
+    # ARC gha-runner-scale-set is targeted by the scale set (installation)
+    # name, NOT by classic labels. This must match the Helm release name
+    # of the runner scale set ("arc-runner-set").
+    runs-on: arc-runner-set
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.10.5"
+
+      - name: Terraform fmt (check)
+        run: terraform fmt -check -recursive -diff
+
+      - name: Terraform init (no backend)
+        # Validation does not need remote state; skip backend init so CI
+        # never touches the real state bucket.
+        run: terraform init -backend=false
+
+      - name: Terraform validate
+        run: terraform validate
+
+      - name: Terraform test
+        run: terraform test

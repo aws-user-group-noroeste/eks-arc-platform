@@ -1,0 +1,130 @@
+# =============================================================================
+# terraform.tfvars.example
+# =============================================================================
+# Copy this file to terraform.tfvars and replace placeholder values with your
+# actual configuration. Variables marked "REPLACE_ME" are intentionally rejected
+# by validation to ensure real values are provided before apply.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# General
+# -----------------------------------------------------------------------------
+
+# IAM role Terraform assumes for provisioning (from s3-backend output)
+terraform_execution_role_arn = "arn:aws:iam::<account-id>:role/TerraformEKSARCExecutionRole"
+
+# IAM principal granted EKS cluster-admin for kubectl (from s3-backend output)
+cluster_admin_arn = "arn:aws:iam::<account-id>:role/EKSClusterAdminRole"
+
+# AWS region where all resources will be provisioned
+aws_region = "us-east-1"
+
+# S3 state key path (1-1024 characters)
+# This is provided via -backend-config, shown here for reference
+state_key = "terraform/eks-arc-runners/terraform.tfstate"
+
+# -----------------------------------------------------------------------------
+# Networking
+# -----------------------------------------------------------------------------
+
+# IPv4 CIDR block for the new VPC
+vpc_cidr = "10.0.0.0/16"
+
+# Number of NAT gateways (one per AZ for HA, or 1 for cost savings)
+nat_gateway_count = 1
+
+# -----------------------------------------------------------------------------
+# EKS Cluster
+# -----------------------------------------------------------------------------
+
+# EKS Kubernetes minor version (supported: 1.30, 1.31, 1.32, 1.33, 1.34, 1.35, 1.36)
+kubernetes_version = "1.36"
+
+# Maximum number of nodes in the system managed node group
+system_node_group_max_size = 3
+
+# -----------------------------------------------------------------------------
+# Karpenter (Autoscaler)
+# -----------------------------------------------------------------------------
+
+# Exact semver version of the Karpenter Helm chart
+karpenter_chart_version = "1.13.0"
+
+# Seconds a Karpenter node must be empty before consolidation (0-3600)
+karpenter_consolidate_after_seconds = 30
+
+# Maximum total CPU cores the Karpenter NodePool may provision (1-10000)
+nodepool_cpu_limit = 100
+
+# -----------------------------------------------------------------------------
+# ARC Controller (Actions Runner Controller)
+# -----------------------------------------------------------------------------
+
+# Exact semver version of the ARC controller Helm chart
+arc_controller_chart_version = "0.10.1"
+
+# Kubernetes namespace for the ARC controller (RFC1123 label, max 63 chars)
+arc_namespace = "arc-systems"
+
+# Seconds to wait for ARC controller pods to become Ready
+arc_controller_ready_timeout_seconds = 300
+
+# -----------------------------------------------------------------------------
+# Runner Scale Set
+# -----------------------------------------------------------------------------
+
+# Exact semver version of the ARC runner-scale-set Helm chart
+runner_scale_set_chart_version = "0.10.1"
+
+# Kubernetes namespace for the runner scale set (RFC1123 label, max 63 chars)
+runner_namespace = "arc-runners"
+
+# GitHub organization name where runners will be registered
+github_org = "your-github-org"
+
+# GitHub runner group name
+runner_group = "default"
+
+# Labels to apply to the runner scale set (must contain at least one)
+runner_labels = ["self-hosted", "linux", "x64"]
+
+# Maximum number of concurrent runner replicas (1-1000)
+max_runners = 10
+
+# Seconds to retain an emptied runner node before termination (0-3600)
+node_grace_period_seconds = 300
+
+# CPU resource request for runner pods (Kubernetes quantity, e.g. "1", "500m")
+runner_cpu_request = "1"
+
+# Memory resource request for runner pods (Kubernetes quantity, e.g. "2Gi")
+runner_memory_request = "2Gi"
+
+# -----------------------------------------------------------------------------
+# GitHub App Credentials (sensitive - MUST be replaced)
+# -----------------------------------------------------------------------------
+# These placeholder values are intentionally rejected by validation.
+# You MUST provide real GitHub App credentials before terraform apply.
+# See README for GitHub App setup instructions.
+
+# GitHub App ID (numeric string, e.g. "123456")
+github_app_id = "REPLACE_ME"
+
+# GitHub App Installation ID (numeric string, e.g. "12345678")
+github_app_installation_id = "REPLACE_ME"
+
+# GitHub App private key — provide EITHER an inline PEM or a file path.
+# github_app_private_key requires a real PEM (inline) ...
+github_app_private_key = "REPLACE_ME"
+# ... or instead point to a PEM file (preferred; leave github_app_private_key = ""):
+# github_app_private_key_file = "/absolute/path/to/private-key.pem"
+
+# -----------------------------------------------------------------------------
+# Secrets Store CSI Driver & AWS Secrets Provider
+# -----------------------------------------------------------------------------
+
+# Exact semver version of the Secrets Store CSI Driver Helm chart
+secrets_store_csi_chart_version = "1.4.7"
+
+# Exact semver version of the AWS Secrets and Configuration Provider (ASCP) Helm chart
+ascp_chart_version = "0.3.11"

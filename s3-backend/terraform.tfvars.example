@@ -1,0 +1,5 @@
+# s3-backend bootstrap variables.
+# Copy to terraform.tfvars (gitignored) and set a globally-unique bucket name.
+
+aws_region        = "us-east-1"
+state_bucket_name = "terraform-state-<your-account-id-or-unique-suffix>"

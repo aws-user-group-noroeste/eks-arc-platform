@@ -1,0 +1,6 @@
+apiVersion: v2
+name: karpenter-resources
+description: Karpenter NodePool and EC2NodeClass custom resources for the runners
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
