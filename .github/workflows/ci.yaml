@@ -29,6 +29,9 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.10.5"
+          # ARC runner images don't expose node on the PATH for run steps;
+          # disable the Node.js wrapper so terraform is called directly.
+          terraform_wrapper: false
 
       - name: Terraform fmt (check)
         run: terraform fmt -check -recursive -diff

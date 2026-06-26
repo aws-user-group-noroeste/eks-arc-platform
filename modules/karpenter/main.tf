@@ -30,9 +30,27 @@ module "karpenter" {
 }
 
 # -----------------------------------------------------------------------------
-# Karpenter Module - Helm Release (Layer 2)
-# Installs Karpenter into kube-system, pinned to karpenter_chart_version,
-# tolerating the CriticalAddonsOnly taint and targeting system nodes.
+# Supplementary IAM policy for the Karpenter controller role.
+# Karpenter 1.13 calls iam:ListInstanceProfiles during EC2NodeClass
+# reconciliation, which the EKS module v20.31 v1 policy does not grant.
+# Without it the EC2NodeClass stays "not ready" and no nodes are provisioned.
+# -----------------------------------------------------------------------------
+resource "aws_iam_role_policy" "karpenter_controller_extra" {
+  name = "ListInstanceProfiles"
+  role = module.karpenter.iam_role_name
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid      = "ListInstanceProfiles"
+        Effect   = "Allow"
+        Action   = ["iam:ListInstanceProfiles"]
+        Resource = "*"
+      }
+    ]
+  })
+}
 # Requirements: 4.1, 4.3, 4.5, 9.3, 9.4
 # -----------------------------------------------------------------------------
 

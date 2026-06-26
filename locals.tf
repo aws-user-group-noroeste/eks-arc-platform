@@ -22,9 +22,8 @@ locals {
   cluster_name = "eks-arc-runners"
 
   common_tags = {
-    Project                  = "eks-arc-runners"
-    ManagedBy                = "terraform"
-    "karpenter.sh/discovery" = local.cluster_name
+    Project   = "eks-arc-runners"
+    ManagedBy = "terraform"
   }
 
   # ---------------------------------------------------------------------------
