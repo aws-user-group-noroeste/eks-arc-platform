@@ -66,3 +66,9 @@ variable "irsa_role_arn" {
   description = "ARN of the IRSA IAM role for runner pods to access Secrets Manager."
   type        = string
 }
+
+variable "runner_image" {
+  description = "Container image for the runner pod. Pin to a specific tag for reproducibility."
+  type        = string
+  default     = "ghcr.io/actions/actions-runner:latest"
+}

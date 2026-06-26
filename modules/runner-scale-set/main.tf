@@ -123,6 +123,18 @@ resource "helm_release" "runner_scale_set" {
     value = "runner"
   }
 
+  # The runner container image. Required because we customize containers[0];
+  # ARC's default runner image, pinned via var for reproducibility.
+  set {
+    name  = "template.spec.containers[0].image"
+    value = var.runner_image
+  }
+
+  set {
+    name  = "template.spec.containers[0].command[0]"
+    value = "/home/runner/run.sh"
+  }
+
   set {
     name  = "template.spec.containers[0].resources.requests.cpu"
     value = var.runner_cpu_request
