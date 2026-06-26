@@ -45,4 +45,10 @@ jobs:
         run: terraform validate
 
       - name: Terraform test
+        # The two deployment-only variables have no defaults; supply dummy
+        # values so the mock-provider test suite can plan. These never reach
+        # AWS (tests use mock_provider + override_module).
+        env:
+          TF_VAR_terraform_execution_role_arn: "arn:aws:iam::123456789012:role/test-exec"
+          TF_VAR_cluster_admin_arn: "arn:aws:iam::123456789012:role/test-admin"
         run: terraform test
