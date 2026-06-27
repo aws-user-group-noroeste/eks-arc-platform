@@ -1,4 +1,4 @@
-# EKS ARC Runners
+# GitHub Actions Self-Hosted Platform on EKS with ARC
 
 Terraform that provisions an Amazon EKS cluster hosting GitHub Actions Runner
 Controller (ARC) self-hosted runners, with Karpenter for just-in-time node
@@ -262,7 +262,7 @@ touches real AWS or the state bucket.
 ## Module Structure
 
 ```
-eks-arc-runners/
+eks-arc-platform/
 ├── versions.tf / backend.tf / providers.tf
 ├── variables.tf / locals.tf / main.tf / outputs.tf
 ├── backend.hcl(.example)         # backend bucket + assume-role config
