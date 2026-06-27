@@ -1,0 +1,45 @@
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: runners
+spec:
+  template:
+    metadata:
+      labels:
+        workload: runner
+    spec:
+      taints:
+        - key: runner
+          value: "true"
+          effect: NoSchedule
+      requirements:
+        - key: karpenter.sh/capacity-type
+          operator: In
+          values: ["spot", "on-demand"]
+        - key: kubernetes.io/arch
+          operator: In
+          values: ["amd64"]
+        # Non-burstable families only (drop "t" to avoid CPU-credit throttling
+        # on sustained workloads like the test suite).
+        - key: karpenter.k8s.aws/instance-category
+          operator: In
+          values: ["c", "m"]
+        # Recent generations only.
+        - key: karpenter.k8s.aws/instance-generation
+          operator: Gt
+          values: ["2"]
+        # Larger instances for faster builds (8–16 vCPU).
+        - key: karpenter.k8s.aws/instance-cpu
+          operator: In
+          values: ["8", "16"]
+      nodeClassRef:
+        group: karpenter.k8s.aws
+        kind: EC2NodeClass
+        name: runners
+      terminationGracePeriod: {{ .Values.nodeGracePeriodSeconds }}s
+      expireAfter: 720h
+  limits:
+    cpu: "{{ .Values.cpuLimit }}"
+  disruption:
+    consolidationPolicy: WhenEmptyOrUnderutilized
+    consolidateAfter: {{ .Values.consolidateAfterSeconds }}s

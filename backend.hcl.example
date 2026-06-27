@@ -1,0 +1,17 @@
+# backend.hcl — supply via `terraform init -backend-config=backend.hcl`
+# Copy to backend.hcl (gitignored) and fill in real values from the
+# `s3-backend` bootstrap outputs.
+
+# S3 bucket that stores Terraform state (created by s3-backend).
+bucket = "my-terraform-state-bucket"
+
+# AWS region where the bucket resides.
+region = "us-east-1"
+
+# State object key path (1–1024 characters).
+key = "eks-arc-runners/terraform.tfstate"
+
+# IAM role Terraform assumes to read/write state (from s3-backend output).
+assume_role = {
+  role_arn = "arn:aws:iam::<account-id>:role/TerraformEKSARCExecutionRole"
+}
