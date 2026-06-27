@@ -19,7 +19,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.0"
+      version = "~> 6.52"
     }
   }
 }
@@ -198,7 +198,7 @@ resource "aws_iam_role_policy" "vpc" {
           "ec2:CreateTags", "ec2:DeleteTags", "ec2:DescribeTags",
           "ec2:DescribeAvailabilityZones", "ec2:DescribeNetworkInterfaces",
           "ec2:DescribeAccountAttributes",
-          "ec2:CreateLaunchTemplate", "ec2:DeleteLaunchTemplate", "ec2:DescribeLaunchTemplates", "ec2:DescribeLaunchTemplateVersions", "ec2:CreateLaunchTemplateVersion",
+          "ec2:CreateLaunchTemplate", "ec2:DeleteLaunchTemplate", "ec2:DescribeLaunchTemplates", "ec2:DescribeLaunchTemplateVersions", "ec2:CreateLaunchTemplateVersion", "ec2:ModifyLaunchTemplate", "ec2:DeleteLaunchTemplateVersions", "ec2:GetLaunchTemplateData",
           "ec2:RunInstances", "ec2:DescribeInstances", "ec2:TerminateInstances", "ec2:DescribeInstanceTypes",
           "ec2:DescribeImages", "ec2:DescribeKeyPairs",
         ]
@@ -250,7 +250,7 @@ resource "aws_iam_role_policy" "iam" {
         Sid    = "IAM"
         Effect = "Allow"
         Action = [
-          "iam:CreateRole", "iam:DeleteRole", "iam:GetRole", "iam:UpdateRole", "iam:PassRole",
+          "iam:CreateRole", "iam:DeleteRole", "iam:GetRole", "iam:UpdateRole", "iam:PassRole", "iam:UpdateAssumeRolePolicy",
           "iam:TagRole", "iam:UntagRole", "iam:ListRolePolicies", "iam:ListAttachedRolePolicies", "iam:ListInstanceProfilesForRole",
           "iam:AttachRolePolicy", "iam:DetachRolePolicy", "iam:PutRolePolicy", "iam:DeleteRolePolicy", "iam:GetRolePolicy",
           "iam:CreatePolicy", "iam:DeletePolicy", "iam:GetPolicy", "iam:GetPolicyVersion", "iam:ListPolicyVersions", "iam:CreatePolicyVersion", "iam:DeletePolicyVersion", "iam:TagPolicy", "iam:UntagPolicy",
@@ -375,6 +375,17 @@ resource "aws_iam_role_policy" "supporting" {
         Effect   = "Allow"
         Action   = ["sts:GetCallerIdentity"]
         Resource = "*"
+      },
+      {
+        # EKS module v21 reads the managed node group AMI release version from
+        # the public EKS-optimized AMI SSM parameters.
+        Sid    = "SSMEKSAmiParameters"
+        Effect = "Allow"
+        Action = [
+          "ssm:GetParameter",
+          "ssm:GetParameters",
+        ]
+        Resource = "arn:aws:ssm:*::parameter/aws/service/eks/optimized-ami/*"
       },
       {
         Sid    = "Logs"
@@ -551,6 +562,15 @@ resource "aws_iam_role_policy" "plan_readonly" {
           "logs:Describe*", "logs:List*",
         ]
         Resource = "*"
+      },
+      {
+        Sid    = "SSMEKSAmiParameters"
+        Effect = "Allow"
+        Action = [
+          "ssm:GetParameter",
+          "ssm:GetParameters",
+        ]
+        Resource = "arn:aws:ssm:*::parameter/aws/service/eks/optimized-ami/*"
       },
       {
         Sid      = "STS"

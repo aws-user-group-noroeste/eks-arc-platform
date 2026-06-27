@@ -26,6 +26,10 @@ module "karpenter" {
   namespace                       = "kube-system"
   service_account                 = "karpenter"
 
+  # Use an inline role policy (10240-char limit) instead of a managed policy
+  # (6144-char limit); the v21 Karpenter v1 controller policy exceeds 6144.
+  enable_inline_policy = true
+
   tags = var.tags
 }
 
