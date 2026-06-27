@@ -115,10 +115,39 @@ into `terraform.tfvars` (`terraform_execution_role_arn`, `cluster_admin_arn`).
 ```bash
 cd ..
 terraform init -backend-config=backend.hcl
+```
+
+> **You cannot apply the whole platform in a single `terraform apply` on a
+> fresh cluster.** The `kubernetes` and `helm` providers authenticate using
+> the EKS cluster endpoint/CA that come from `module.eks` outputs. On the very
+> first apply those outputs don't exist yet, so Terraform cannot plan any
+> Kubernetes/Helm resource until the cluster is real. You must therefore apply
+> in ordered `-target` passes the first time:
+
+```bash
+# Pass 1 — network + cluster (so the k8s/helm providers can authenticate)
+terraform apply \
+  -target=module.vpc \
+  -target=module.eks
+
+# Pass 2 — operators that register CRDs, plus IAM/secret prerequisites
+terraform apply \
+  -target=module.karpenter \
+  -target=module.secrets \
+  -target=module.secrets_store_csi \
+  -target=module.external_secrets \
+  -target=module.arc_controller
+
+# Pass 3 — everything else (NodePool/EC2NodeClass, ClusterSecretStore/
+# ExternalSecret, runner scale set) now that their CRDs and inputs exist
 terraform apply
 ```
 
-Module dependency order (handled automatically):
+After the cluster exists, subsequent day-2 changes can usually run as a plain
+`terraform apply` (no `-target`). The staged passes are only required for the
+initial bring-up (or after a full destroy).
+
+Module dependency order (enforced by `depends_on` within each pass):
 
 1. **VPC** — subnets (AZ-filtered), NAT, route tables
 2. **EKS** — control plane, system node group, addons (incl. `eks-pod-identity-agent`), OIDC, access entries
