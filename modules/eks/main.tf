@@ -10,6 +10,7 @@ module "eks" {
 
   name               = var.cluster_name
   kubernetes_version = var.kubernetes_version
+  cluster_ip_family  = var.enable_ipv6 ? "ipv6" : "ipv4"
 
   # Explicitly opt into STANDARD support to avoid extended support charges
   upgrade_policy = {
@@ -52,6 +53,14 @@ module "eks" {
     }
 
     vpc-cni = {
+      # ENABLE_IPv6 + ENABLE_PREFIX_DELEGATION are required for ip_family=ipv6 clusters.
+      # Prefix delegation is recommended by AWS for IPv6 to maximise pods-per-node.
+      configuration_values = var.enable_ipv6 ? jsonencode({
+        env = {
+          ENABLE_IPv6              = "true"
+          ENABLE_PREFIX_DELEGATION = "true"
+        }
+      }) : null
       timeouts = {
         create = "15m"
         update = "15m"

@@ -21,3 +21,8 @@ output "azs" {
   description = "List of availability zones used by the VPC subnets."
   value       = local.azs
 }
+
+output "vpc_ipv6_cidr_block" {
+  description = "The IPv6 CIDR block assigned to the VPC (null when enable_ipv6 = false)."
+  value       = module.vpc.vpc_ipv6_cidr_block
+}

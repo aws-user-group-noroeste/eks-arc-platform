@@ -66,6 +66,12 @@ variable "nat_gateway_count" {
   }
 }
 
+variable "enable_ipv6" {
+  description = "Enable IPv6 dual-stack for the VPC subnets and the EKS cluster (ip_family = ipv6). Cannot be changed after cluster creation — plan carefully before enabling."
+  type        = bool
+  default     = false
+}
+
 variable "kubernetes_version" {
   description = "EKS Kubernetes minor version."
   type        = string

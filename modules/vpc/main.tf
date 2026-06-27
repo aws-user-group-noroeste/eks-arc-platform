@@ -47,6 +47,14 @@ module "vpc" {
   enable_dns_hostnames = true
   enable_dns_support   = true
 
+  # IPv6 dual-stack (no-op when enable_ipv6 = false)
+  enable_ipv6                                    = var.enable_ipv6
+  assign_ipv6_address_on_creation                = var.enable_ipv6
+  public_subnet_assign_ipv6_address_on_creation  = var.enable_ipv6
+  private_subnet_assign_ipv6_address_on_creation = var.enable_ipv6
+  # Egress-Only IGW for IPv6 outbound from private subnets (NAT does not handle IPv6)
+  create_egress_only_igw = var.enable_ipv6
+
   # Disable default resource management — incompatible with AWS provider >= 5.87
   manage_default_network_acl    = false
   manage_default_route_table    = false

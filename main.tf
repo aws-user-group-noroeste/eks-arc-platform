@@ -27,6 +27,7 @@ module "vpc" {
   vpc_cidr          = var.vpc_cidr
   cluster_name      = local.cluster_name
   nat_gateway_count = var.nat_gateway_count
+  enable_ipv6       = var.enable_ipv6
 }
 
 # -----------------------------------------------------------------------------
@@ -43,6 +44,7 @@ module "eks" {
   cluster_admin_arn            = var.cluster_admin_arn
   terraform_execution_role_arn = var.terraform_execution_role_arn
   aws_region                   = var.aws_region
+  enable_ipv6                  = var.enable_ipv6
 
   depends_on = [module.vpc]
 }

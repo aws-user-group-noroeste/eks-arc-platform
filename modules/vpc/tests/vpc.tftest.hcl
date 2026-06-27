@@ -91,3 +91,27 @@ run "public_subnet_tags_elb" {
     error_message = "All public subnets must be tagged with kubernetes.io/role/elb = 1."
   }
 }
+
+# --- Test: IPv6 disabled by default (backward compatibility) ---
+run "ipv6_disabled_by_default" {
+  command = plan
+
+  assert {
+    condition     = output.vpc_ipv6_cidr_block == null
+    error_message = "vpc_ipv6_cidr_block must be null when enable_ipv6 = false (the default)."
+  }
+}
+
+# --- Test: IPv6 enabled produces egress-only IGW in plan ---
+run "ipv6_enabled_plans_egress_only_igw" {
+  command = plan
+
+  variables {
+    enable_ipv6 = true
+  }
+
+  assert {
+    condition     = length(module.vpc.egress_only_internet_gateway_id) > 0
+    error_message = "An Egress-Only Internet Gateway must be planned when enable_ipv6 = true."
+  }
+}
