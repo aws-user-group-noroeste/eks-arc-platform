@@ -11,7 +11,14 @@ updates:
         update-types: [minor, patch]
 
   - package-ecosystem: "terraform"
-    directory: "/"
+    directories:
+      - "/"
+      - "/modules/eks"
+      - "/modules/vpc"
+      - "/modules/secrets"
+      - "/modules/secrets-store-csi"
+      - "/modules/runner-scale-set"
+      - "/s3-backend"
     schedule:
       interval: "weekly"
     commit-message:

@@ -16,10 +16,7 @@ permissions:
 jobs:
   terraform:
     name: Validate & Test
-    # ARC gha-runner-scale-set is targeted by the scale set (installation)
-    # name, NOT by classic labels. This must match the Helm release name
-    # of the runner scale set ("arc-runner-set").
-    runs-on: arc-runner-set
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
