@@ -24,61 +24,54 @@ resource "helm_release" "secrets_store_csi_driver" {
   # Retain created resources on failure so the Operator can retry (Requirement 11.5)
   atomic = false
 
-  # Enable syncing of Secrets Manager secrets to Kubernetes Secrets (Requirement 11.3)
-  set {
-    name  = "syncSecret.enabled"
-    value = "true"
-  }
-
-  # Enable secret rotation so out-of-band updates propagate (Requirement 6.6)
-  set {
-    name  = "enableSecretRotation"
-    value = "true"
-  }
-
-  # Poll interval for secret rotation
-  set {
-    name  = "rotationPollInterval"
-    value = "120s"
-  }
-
-  # DaemonSet tolerations: system nodes (CriticalAddonsOnly) + Karpenter runner
-  # nodes (runner=true:NoSchedule) so the driver runs on ALL nodes (Requirement 11.4)
-  set {
-    name  = "linux.tolerations[0].key"
-    value = "CriticalAddonsOnly"
-  }
-
-  set {
-    name  = "linux.tolerations[0].operator"
-    value = "Exists"
-  }
-
-  set {
-    name  = "linux.tolerations[0].effect"
-    value = "NoSchedule"
-  }
-
-  set {
-    name  = "linux.tolerations[1].key"
-    value = "runner"
-  }
-
-  set {
-    name  = "linux.tolerations[1].operator"
-    value = "Equal"
-  }
-
-  set {
-    name  = "linux.tolerations[1].value"
-    type  = "string"
-    value = "true"
-  }
-
-  set {
-    name  = "linux.tolerations[1].effect"
-    value = "NoSchedule"
-  }
+  set = [
+    # Enable syncing of Secrets Manager secrets to Kubernetes Secrets (Requirement 11.3)
+    {
+      name  = "syncSecret.enabled"
+      value = "true"
+    },
+    # Enable secret rotation so out-of-band updates propagate (Requirement 6.6)
+    {
+      name  = "enableSecretRotation"
+      value = "true"
+    },
+    # Poll interval for secret rotation
+    {
+      name  = "rotationPollInterval"
+      value = "120s"
+    },
+    # DaemonSet tolerations: system nodes (CriticalAddonsOnly) + Karpenter runner
+    # nodes (runner=true:NoSchedule) so the driver runs on ALL nodes (Requirement 11.4)
+    {
+      name  = "linux.tolerations[0].key"
+      value = "CriticalAddonsOnly"
+    },
+    {
+      name  = "linux.tolerations[0].operator"
+      value = "Exists"
+    },
+    {
+      name  = "linux.tolerations[0].effect"
+      value = "NoSchedule"
+    },
+    {
+      name  = "linux.tolerations[1].key"
+      value = "runner"
+    },
+    {
+      name  = "linux.tolerations[1].operator"
+      value = "Equal"
+    },
+    {
+      name  = "linux.tolerations[1].value"
+      type  = "string"
+      value = "true"
+    },
+    {
+      name  = "linux.tolerations[1].effect"
+      value = "NoSchedule"
+    },
+  ]
 }
 
 # ---------------------------------------------------------------------------
@@ -100,41 +93,37 @@ resource "helm_release" "ascp" {
 
   # DaemonSet tolerations: system nodes (CriticalAddonsOnly) + Karpenter runner
   # nodes (runner=true:NoSchedule) so the provider runs on ALL nodes (Requirement 11.4)
-  set {
-    name  = "tolerations[0].key"
-    value = "CriticalAddonsOnly"
-  }
-
-  set {
-    name  = "tolerations[0].operator"
-    value = "Exists"
-  }
-
-  set {
-    name  = "tolerations[0].effect"
-    value = "NoSchedule"
-  }
-
-  set {
-    name  = "tolerations[1].key"
-    value = "runner"
-  }
-
-  set {
-    name  = "tolerations[1].operator"
-    value = "Equal"
-  }
-
-  set {
-    name  = "tolerations[1].value"
-    type  = "string"
-    value = "true"
-  }
-
-  set {
-    name  = "tolerations[1].effect"
-    value = "NoSchedule"
-  }
+  set = [
+    {
+      name  = "tolerations[0].key"
+      value = "CriticalAddonsOnly"
+    },
+    {
+      name  = "tolerations[0].operator"
+      value = "Exists"
+    },
+    {
+      name  = "tolerations[0].effect"
+      value = "NoSchedule"
+    },
+    {
+      name  = "tolerations[1].key"
+      value = "runner"
+    },
+    {
+      name  = "tolerations[1].operator"
+      value = "Equal"
+    },
+    {
+      name  = "tolerations[1].value"
+      type  = "string"
+      value = "true"
+    },
+    {
+      name  = "tolerations[1].effect"
+      value = "NoSchedule"
+    },
+  ]
 
   # Ensure the CSI Driver CRDs are available before installing the provider
   depends_on = [helm_release.secrets_store_csi_driver]

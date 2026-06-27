@@ -68,139 +68,117 @@ resource "helm_release" "runner_scale_set" {
   wait   = true
   atomic = false
 
-  # --- GitHub registration (Requirement 7.1) ---
-  set {
-    name  = "githubConfigUrl"
-    value = "https://github.com/${var.github_org}"
-  }
-
-  set {
-    name  = "githubConfigSecret"
-    value = "github-app-secret"
-  }
-
-  # --- Scaling (Requirements 7.3, 7.4) ---
-  set {
-    name  = "minRunners"
-    value = "0"
-  }
-
-  set {
-    name  = "maxRunners"
-    value = tostring(var.max_runners)
-  }
-
-  # --- Runner group (Requirement 7.2) ---
-  set {
-    name  = "runnerGroup"
-    value = var.runner_group
-  }
-
-  # --- Runner labels for job targeting (Requirement 7.2) ---
-  dynamic "set" {
-    for_each = var.runner_labels
-    content {
-      name  = "labels[${set.key}]"
-      value = set.value
-    }
-  }
-
-  # --- Container mode: Docker-in-Docker for isolation (Requirement 8.4) ---
-  set {
-    name  = "containerMode.type"
-    value = "dind"
-  }
-
-  # --- Pod template: serviceAccountName (Requirement 12.3) ---
-  set {
-    name  = "template.spec.serviceAccountName"
-    value = kubernetes_service_account_v1.runner.metadata[0].name
-  }
-
-  # --- Pod template: resource requests (Requirement 8.1) ---
-  set {
-    name  = "template.spec.containers[0].name"
-    value = "runner"
-  }
-
-  # The runner container image. Required because we customize containers[0];
-  # ARC's default runner image, pinned via var for reproducibility.
-  set {
-    name  = "template.spec.containers[0].image"
-    value = var.runner_image
-  }
-
-  set {
-    name  = "template.spec.containers[0].command[0]"
-    value = "/home/runner/run.sh"
-  }
-
-  set {
-    name  = "template.spec.containers[0].resources.requests.cpu"
-    value = var.runner_cpu_request
-  }
-
-  set {
-    name  = "template.spec.containers[0].resources.requests.memory"
-    value = var.runner_memory_request
-  }
-
-  # --- Pod template: nodeSelector for Karpenter nodes (Requirement 8.2) ---
-  set {
-    name  = "template.spec.nodeSelector.workload"
-    value = "runner"
-  }
-
-  # --- Pod template: toleration for runner=true:NoSchedule (Requirement 8.2) ---
-  set {
-    name  = "template.spec.tolerations[0].key"
-    value = "runner"
-  }
-
-  set {
-    name  = "template.spec.tolerations[0].value"
-    type  = "string"
-    value = "true"
-  }
-
-  set {
-    name  = "template.spec.tolerations[0].effect"
-    value = "NoSchedule"
-  }
-
-  # --- Pod template: terminationGracePeriodSeconds (Requirement 7.9) ---
-  set {
-    name  = "template.spec.terminationGracePeriodSeconds"
-    value = tostring(var.node_grace_period_seconds)
-  }
-
-  # --- Listener pod: schedule on system nodes (tolerate CriticalAddonsOnly) ---
-  # The listener runs in the controller namespace and must land on a system node.
-  set {
-    name  = "listenerTemplate.spec.nodeSelector.workload"
-    value = "system"
-  }
-
-  set {
-    name  = "listenerTemplate.spec.tolerations[0].key"
-    value = "CriticalAddonsOnly"
-  }
-
-  set {
-    name  = "listenerTemplate.spec.tolerations[0].operator"
-    value = "Exists"
-  }
-
-  set {
-    name  = "listenerTemplate.spec.tolerations[0].effect"
-    value = "NoSchedule"
-  }
-
-  # listenerTemplate requires a container entry named "listener"
-  set {
-    name  = "listenerTemplate.spec.containers[0].name"
-    value = "listener"
-  }
+  set = concat(
+    [
+      # --- GitHub registration (Requirement 7.1) ---
+      {
+        name  = "githubConfigUrl"
+        value = "https://github.com/${var.github_org}"
+      },
+      {
+        name  = "githubConfigSecret"
+        value = "github-app-secret"
+      },
+      # --- Scaling (Requirements 7.3, 7.4) ---
+      {
+        name  = "minRunners"
+        value = "0"
+      },
+      {
+        name  = "maxRunners"
+        value = tostring(var.max_runners)
+      },
+      # --- Runner group (Requirement 7.2) ---
+      {
+        name  = "runnerGroup"
+        value = var.runner_group
+      },
+      # --- Container mode: Docker-in-Docker for isolation (Requirement 8.4) ---
+      {
+        name  = "containerMode.type"
+        value = "dind"
+      },
+      # --- Pod template: serviceAccountName (Requirement 12.3) ---
+      {
+        name  = "template.spec.serviceAccountName"
+        value = kubernetes_service_account_v1.runner.metadata[0].name
+      },
+      # --- Pod template: runner container (name + image required when customized) ---
+      {
+        name  = "template.spec.containers[0].name"
+        value = "runner"
+      },
+      {
+        name  = "template.spec.containers[0].image"
+        value = var.runner_image
+      },
+      {
+        name  = "template.spec.containers[0].command[0]"
+        value = "/home/runner/run.sh"
+      },
+      # --- Pod template: resource requests (Requirement 8.1) ---
+      {
+        name  = "template.spec.containers[0].resources.requests.cpu"
+        value = var.runner_cpu_request
+      },
+      {
+        name  = "template.spec.containers[0].resources.requests.memory"
+        value = var.runner_memory_request
+      },
+      # --- Pod template: nodeSelector for Karpenter nodes (Requirement 8.2) ---
+      {
+        name  = "template.spec.nodeSelector.workload"
+        value = "runner"
+      },
+      # --- Pod template: toleration for runner=true:NoSchedule (Requirement 8.2) ---
+      {
+        name  = "template.spec.tolerations[0].key"
+        value = "runner"
+      },
+      {
+        name  = "template.spec.tolerations[0].value"
+        type  = "string"
+        value = "true"
+      },
+      {
+        name  = "template.spec.tolerations[0].effect"
+        value = "NoSchedule"
+      },
+      # --- Pod template: terminationGracePeriodSeconds (Requirement 7.9) ---
+      {
+        name  = "template.spec.terminationGracePeriodSeconds"
+        value = tostring(var.node_grace_period_seconds)
+      },
+      # --- Listener pod: schedule on system nodes (tolerate CriticalAddonsOnly) ---
+      {
+        name  = "listenerTemplate.spec.nodeSelector.workload"
+        value = "system"
+      },
+      {
+        name  = "listenerTemplate.spec.tolerations[0].key"
+        value = "CriticalAddonsOnly"
+      },
+      {
+        name  = "listenerTemplate.spec.tolerations[0].operator"
+        value = "Exists"
+      },
+      {
+        name  = "listenerTemplate.spec.tolerations[0].effect"
+        value = "NoSchedule"
+      },
+      {
+        name  = "listenerTemplate.spec.containers[0].name"
+        value = "listener"
+      },
+    ],
+    # --- Runner labels for job targeting (Requirement 7.2) ---
+    [
+      for i, label in var.runner_labels : {
+        name  = "labels[${i}]"
+        value = label
+      }
+    ],
+  )
 
   depends_on = [
     kubernetes_service_account_v1.runner,

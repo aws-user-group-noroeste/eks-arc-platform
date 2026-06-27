@@ -7,6 +7,31 @@ mock_provider "aws" {}
 mock_provider "kubernetes" {}
 mock_provider "helm" {}
 
+override_module {
+  target = module.vpc
+}
+override_module {
+  target = module.eks
+}
+override_module {
+  target = module.karpenter
+}
+override_module {
+  target = module.arc_controller
+}
+override_module {
+  target = module.secrets
+}
+override_module {
+  target = module.external_secrets
+}
+override_module {
+  target = module.secrets_store_csi
+}
+override_module {
+  target = module.runner_scale_set
+}
+
 variables {
   # Valid defaults for required vars not under test
   state_key                      = "terraform/test/terraform.tfstate"
@@ -28,12 +53,6 @@ run "reject_version_1_28" {
     kubernetes_version = "1.28"
   }
 
-  override_data {
-    target = module.vpc.data.aws_availability_zones.available
-    values = {
-      names = ["us-east-1a", "us-east-1b"]
-    }
-  }
 
   expect_failures = [var.kubernetes_version]
 }
@@ -45,12 +64,6 @@ run "reject_version_1_29" {
     kubernetes_version = "1.29"
   }
 
-  override_data {
-    target = module.vpc.data.aws_availability_zones.available
-    values = {
-      names = ["us-east-1a", "us-east-1b"]
-    }
-  }
 
   expect_failures = [var.kubernetes_version]
 }
@@ -62,12 +75,6 @@ run "accept_version_1_30" {
     kubernetes_version = "1.30"
   }
 
-  override_data {
-    target = module.vpc.data.aws_availability_zones.available
-    values = {
-      names = ["us-east-1a", "us-east-1b"]
-    }
-  }
 }
 
 run "accept_version_1_31" {
@@ -77,12 +84,6 @@ run "accept_version_1_31" {
     kubernetes_version = "1.31"
   }
 
-  override_data {
-    target = module.vpc.data.aws_availability_zones.available
-    values = {
-      names = ["us-east-1a", "us-east-1b"]
-    }
-  }
 }
 
 run "accept_version_1_32" {
@@ -92,12 +93,6 @@ run "accept_version_1_32" {
     kubernetes_version = "1.32"
   }
 
-  override_data {
-    target = module.vpc.data.aws_availability_zones.available
-    values = {
-      names = ["us-east-1a", "us-east-1b"]
-    }
-  }
 }
 
 run "accept_version_1_36" {
@@ -107,12 +102,6 @@ run "accept_version_1_36" {
     kubernetes_version = "1.36"
   }
 
-  override_data {
-    target = module.vpc.data.aws_availability_zones.available
-    values = {
-      names = ["us-east-1a", "us-east-1b"]
-    }
-  }
 }
 
 # --- Reject cases: out-of-set versions ---
@@ -125,12 +114,6 @@ run "reject_version_1_27" {
     kubernetes_version = "1.27"
   }
 
-  override_data {
-    target = module.vpc.data.aws_availability_zones.available
-    values = {
-      names = ["us-east-1a", "us-east-1b"]
-    }
-  }
 
   expect_failures = [var.kubernetes_version]
 }
@@ -143,12 +126,6 @@ run "accept_version_1_33" {
     kubernetes_version = "1.33"
   }
 
-  override_data {
-    target = module.vpc.data.aws_availability_zones.available
-    values = {
-      names = ["us-east-1a", "us-east-1b"]
-    }
-  }
 }
 
 # Reject: very old version
@@ -159,12 +136,6 @@ run "reject_version_1_0" {
     kubernetes_version = "1.0"
   }
 
-  override_data {
-    target = module.vpc.data.aws_availability_zones.available
-    values = {
-      names = ["us-east-1a", "us-east-1b"]
-    }
-  }
 
   expect_failures = [var.kubernetes_version]
 }
@@ -177,12 +148,6 @@ run "reject_version_2_0" {
     kubernetes_version = "2.0"
   }
 
-  override_data {
-    target = module.vpc.data.aws_availability_zones.available
-    values = {
-      names = ["us-east-1a", "us-east-1b"]
-    }
-  }
 
   expect_failures = [var.kubernetes_version]
 }
@@ -195,12 +160,6 @@ run "reject_empty_string" {
     kubernetes_version = ""
   }
 
-  override_data {
-    target = module.vpc.data.aws_availability_zones.available
-    values = {
-      names = ["us-east-1a", "us-east-1b"]
-    }
-  }
 
   expect_failures = [var.kubernetes_version]
 }
@@ -213,12 +172,6 @@ run "reject_latest" {
     kubernetes_version = "latest"
   }
 
-  override_data {
-    target = module.vpc.data.aws_availability_zones.available
-    values = {
-      names = ["us-east-1a", "us-east-1b"]
-    }
-  }
 
   expect_failures = [var.kubernetes_version]
 }
@@ -231,12 +184,6 @@ run "reject_full_semver_1_31_0" {
     kubernetes_version = "1.31.0"
   }
 
-  override_data {
-    target = module.vpc.data.aws_availability_zones.available
-    values = {
-      names = ["us-east-1a", "us-east-1b"]
-    }
-  }
 
   expect_failures = [var.kubernetes_version]
 }

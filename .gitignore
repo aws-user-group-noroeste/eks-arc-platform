@@ -61,3 +61,11 @@ backend.hcl
 *.keystore
 *.credentials
 .secrets.baseline
+
+# Presentation / media / personal files (not part of the IaC)
+*.pptx
+~$*
+*.jpeg
+*.jpg
+*.png
+!docs/**/*.png

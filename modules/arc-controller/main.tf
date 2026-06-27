@@ -41,23 +41,22 @@ resource "helm_release" "arc_controller" {
 
   # Schedule onto system node group only and tolerate CriticalAddonsOnly taint
   # (Requirement 5.3)
-  set {
-    name  = "nodeSelector.workload"
-    value = "system"
-  }
-
-  set {
-    name  = "tolerations[0].key"
-    value = "CriticalAddonsOnly"
-  }
-
-  set {
-    name  = "tolerations[0].operator"
-    value = "Exists"
-  }
-
-  set {
-    name  = "tolerations[0].effect"
-    value = "NoSchedule"
-  }
+  set = [
+    {
+      name  = "nodeSelector.workload"
+      value = "system"
+    },
+    {
+      name  = "tolerations[0].key"
+      value = "CriticalAddonsOnly"
+    },
+    {
+      name  = "tolerations[0].operator"
+      value = "Exists"
+    },
+    {
+      name  = "tolerations[0].effect"
+      value = "NoSchedule"
+    },
+  ]
 }

@@ -18,75 +18,64 @@ resource "helm_release" "external_secrets" {
   timeout = 300
   atomic  = false
 
-  set {
-    name  = "installCRDs"
-    value = "true"
-  }
-
-  set {
-    name  = "nodeSelector.workload"
-    value = "system"
-  }
-
-  set {
-    name  = "tolerations[0].key"
-    value = "CriticalAddonsOnly"
-  }
-
-  set {
-    name  = "tolerations[0].operator"
-    value = "Exists"
-  }
-
-  set {
-    name  = "tolerations[0].effect"
-    value = "NoSchedule"
-  }
-
-  set {
-    name  = "webhook.nodeSelector.workload"
-    value = "system"
-  }
-
-  set {
-    name  = "webhook.tolerations[0].key"
-    value = "CriticalAddonsOnly"
-  }
-
-  set {
-    name  = "webhook.tolerations[0].operator"
-    value = "Exists"
-  }
-
-  set {
-    name  = "webhook.tolerations[0].effect"
-    value = "NoSchedule"
-  }
-
-  set {
-    name  = "certController.nodeSelector.workload"
-    value = "system"
-  }
-
-  set {
-    name  = "certController.tolerations[0].key"
-    value = "CriticalAddonsOnly"
-  }
-
-  set {
-    name  = "certController.tolerations[0].operator"
-    value = "Exists"
-  }
-
-  set {
-    name  = "certController.tolerations[0].effect"
-    value = "NoSchedule"
-  }
-
-  set {
-    name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
-    value = var.irsa_role_arn
-  }
+  set = [
+    {
+      name  = "installCRDs"
+      value = "true"
+    },
+    {
+      name  = "nodeSelector.workload"
+      value = "system"
+    },
+    {
+      name  = "tolerations[0].key"
+      value = "CriticalAddonsOnly"
+    },
+    {
+      name  = "tolerations[0].operator"
+      value = "Exists"
+    },
+    {
+      name  = "tolerations[0].effect"
+      value = "NoSchedule"
+    },
+    {
+      name  = "webhook.nodeSelector.workload"
+      value = "system"
+    },
+    {
+      name  = "webhook.tolerations[0].key"
+      value = "CriticalAddonsOnly"
+    },
+    {
+      name  = "webhook.tolerations[0].operator"
+      value = "Exists"
+    },
+    {
+      name  = "webhook.tolerations[0].effect"
+      value = "NoSchedule"
+    },
+    {
+      name  = "certController.nodeSelector.workload"
+      value = "system"
+    },
+    {
+      name  = "certController.tolerations[0].key"
+      value = "CriticalAddonsOnly"
+    },
+    {
+      name  = "certController.tolerations[0].operator"
+      value = "Exists"
+    },
+    {
+      name  = "certController.tolerations[0].effect"
+      value = "NoSchedule"
+    },
+    {
+      name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
+      value = var.irsa_role_arn
+    },
+  ]
 }
 
 # ---------------------------------------------------------------------------
@@ -103,20 +92,20 @@ resource "helm_release" "eso_resources" {
   timeout = 300
   atomic  = false
 
-  set {
-    name  = "awsRegion"
-    value = var.aws_region
-  }
-
-  set {
-    name  = "runnerNamespace"
-    value = var.runner_namespace
-  }
-
-  set {
-    name  = "secretName"
-    value = var.secret_name
-  }
+  set = [
+    {
+      name  = "awsRegion"
+      value = var.aws_region
+    },
+    {
+      name  = "runnerNamespace"
+      value = var.runner_namespace
+    },
+    {
+      name  = "secretName"
+      value = var.secret_name
+    },
+  ]
 
   depends_on = [helm_release.external_secrets]
 }

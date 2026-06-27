@@ -1,17 +1,18 @@
 # -----------------------------------------------------------------------------
 # EKS Module - Main Configuration
-# Wraps terraform-aws-modules/eks/aws with IRSA, system node group, and addons
+# Wraps terraform-aws-modules/eks/aws (v21) with IRSA, system node group, addons.
+# v21 renamed cluster_* arguments (name, kubernetes_version, addons, etc.).
 # -----------------------------------------------------------------------------
 
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "~> 20.31"
+  version = "~> 21.0"
 
-  cluster_name    = var.cluster_name
-  cluster_version = var.kubernetes_version
+  name               = var.cluster_name
+  kubernetes_version = var.kubernetes_version
 
   # Explicitly opt into STANDARD support to avoid extended support charges
-  cluster_upgrade_policy = {
+  upgrade_policy = {
     support_type = "STANDARD"
   }
 
@@ -22,8 +23,8 @@ module "eks" {
   enable_irsa = true
 
   # Cluster endpoint access — private + public for Terraform/kubectl access
-  cluster_endpoint_public_access  = true
-  cluster_endpoint_private_access = true
+  endpoint_public_access  = true
+  endpoint_private_access = true
 
   # Tag the cluster and associated resources for Karpenter discovery
   tags = {
@@ -32,12 +33,11 @@ module "eks" {
 
   # ---------------------------------------------------------------------------
   # EKS Managed Addons (Requirements 3.5, 3.6)
-  # Exactly: CoreDNS, kube-proxy, VPC CNI — with wait-for-ready
+  # CoreDNS, kube-proxy, VPC CNI, and the Pod Identity agent (Karpenter).
+  # v21: addons.most_recent defaults to true.
   # ---------------------------------------------------------------------------
-  cluster_addons = {
+  addons = {
     coredns = {
-      most_recent = true
-
       timeouts = {
         create = "15m"
         update = "15m"
@@ -45,8 +45,6 @@ module "eks" {
     }
 
     kube-proxy = {
-      most_recent = true
-
       timeouts = {
         create = "15m"
         update = "15m"
@@ -54,8 +52,6 @@ module "eks" {
     }
 
     vpc-cni = {
-      most_recent = true
-
       timeouts = {
         create = "15m"
         update = "15m"
@@ -63,8 +59,6 @@ module "eks" {
     }
 
     eks-pod-identity-agent = {
-      most_recent = true
-
       timeouts = {
         create = "15m"
         update = "15m"
@@ -74,9 +68,8 @@ module "eks" {
 
   # ---------------------------------------------------------------------------
   # System Managed Node Group (Requirement 3.3)
-  # min_size = 1, max_size = system_node_group_max_size, desired_size = 1
-  # Label: workload=system
-  # Taint: CriticalAddonsOnly=true:NoSchedule
+  # 2× t4g.small (ARM) for HA of controllers/listener.
+  # Label: workload=system; Taint: CriticalAddonsOnly=true:NoSchedule
   # ---------------------------------------------------------------------------
   eks_managed_node_groups = {
     system = {
@@ -103,7 +96,7 @@ module "eks" {
     }
   }
 
-  # Allow the EKS module to manage aws-auth configmap entries for node groups
+  # Grant the cluster creator (Terraform execution role) admin access
   enable_cluster_creator_admin_permissions = true
 
   # Grant cluster admin to the specified IAM principal (for kubectl access)

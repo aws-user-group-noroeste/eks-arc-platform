@@ -2,13 +2,13 @@
 # Karpenter Module - AWS Prerequisites (Layer 1)
 # Creates controller IAM role, node IAM role + instance profile, and
 # SQS interruption queue with EventBridge rules via the EKS module's
-# karpenter submodule.
+# karpenter submodule (v21). v21 uses Pod Identity + v1 permissions by default.
 # Requirements: 4.2
 # -----------------------------------------------------------------------------
 
 module "karpenter" {
   source  = "terraform-aws-modules/eks/aws//modules/karpenter"
-  version = "~> 20.31"
+  version = "~> 21.0"
 
   cluster_name = var.cluster_name
 
@@ -20,9 +20,9 @@ module "karpenter" {
   # Enable SQS-based spot termination handling (EventBridge rules + queue)
   enable_spot_termination = true
 
-  # Use Pod Identity for the Karpenter controller (requires eks-pod-identity-agent addon)
+  # Pod Identity for the Karpenter controller (default in v21; requires the
+  # eks-pod-identity-agent addon). v1 controller permissions are the default.
   create_pod_identity_association = true
-  enable_v1_permissions           = true
   namespace                       = "kube-system"
   service_account                 = "karpenter"
 
@@ -32,8 +32,8 @@ module "karpenter" {
 # -----------------------------------------------------------------------------
 # Supplementary IAM policy for the Karpenter controller role.
 # Karpenter 1.13 calls iam:ListInstanceProfiles during EC2NodeClass
-# reconciliation, which the EKS module v20.31 v1 policy does not grant.
-# Without it the EC2NodeClass stays "not ready" and no nodes are provisioned.
+# reconciliation; granted here defensively in case the module's v1 policy
+# does not include it. Without it the EC2NodeClass can stay "not ready".
 # -----------------------------------------------------------------------------
 resource "aws_iam_role_policy" "karpenter_controller_extra" {
   name = "ListInstanceProfiles"
@@ -51,6 +51,10 @@ resource "aws_iam_role_policy" "karpenter_controller_extra" {
     ]
   })
 }
+
+# -----------------------------------------------------------------------------
+# Karpenter Module - Helm Release (Layer 2)
+# Installs Karpenter into kube-system, pinned to karpenter_chart_version.
 # Requirements: 4.1, 4.3, 4.5, 9.3, 9.4
 # -----------------------------------------------------------------------------
 
@@ -64,45 +68,39 @@ resource "helm_release" "karpenter" {
   # Wait for controller pods to be ready before applying CRD-dependent manifests
   wait    = true
   timeout = 600
-
-  # Retain created resources on failure so the Operator can retry
-  atomic = false
+  atomic  = false
 
   # Schedule onto system node group only and tolerate CriticalAddonsOnly taint
-  set {
-    name  = "settings.clusterName"
-    value = var.cluster_name
-  }
-
-  set {
-    name  = "settings.clusterEndpoint"
-    value = var.cluster_endpoint
-  }
-
-  set {
-    name  = "settings.interruptionQueue"
-    value = module.karpenter.queue_name
-  }
-
-  set {
-    name  = "nodeSelector.workload"
-    value = "system"
-  }
-
-  set {
-    name  = "tolerations[0].key"
-    value = "CriticalAddonsOnly"
-  }
-
-  set {
-    name  = "tolerations[0].operator"
-    value = "Exists"
-  }
-
-  set {
-    name  = "tolerations[0].effect"
-    value = "NoSchedule"
-  }
+  set = [
+    {
+      name  = "settings.clusterName"
+      value = var.cluster_name
+    },
+    {
+      name  = "settings.clusterEndpoint"
+      value = var.cluster_endpoint
+    },
+    {
+      name  = "settings.interruptionQueue"
+      value = module.karpenter.queue_name
+    },
+    {
+      name  = "nodeSelector.workload"
+      value = "system"
+    },
+    {
+      name  = "tolerations[0].key"
+      value = "CriticalAddonsOnly"
+    },
+    {
+      name  = "tolerations[0].operator"
+      value = "Exists"
+    },
+    {
+      name  = "tolerations[0].effect"
+      value = "NoSchedule"
+    },
+  ]
 }
 
 # -----------------------------------------------------------------------------
@@ -122,30 +120,28 @@ resource "helm_release" "karpenter_resources" {
   timeout = 300
   atomic  = false
 
-  set {
-    name  = "clusterName"
-    value = var.cluster_name
-  }
-
-  set {
-    name  = "nodeIamRoleName"
-    value = module.karpenter.node_iam_role_name
-  }
-
-  set {
-    name  = "cpuLimit"
-    value = tostring(var.nodepool_cpu_limit)
-  }
-
-  set {
-    name  = "consolidateAfterSeconds"
-    value = tostring(var.karpenter_consolidate_after_seconds)
-  }
-
-  set {
-    name  = "nodeGracePeriodSeconds"
-    value = tostring(var.node_grace_period_seconds)
-  }
+  set = [
+    {
+      name  = "clusterName"
+      value = var.cluster_name
+    },
+    {
+      name  = "nodeIamRoleName"
+      value = module.karpenter.node_iam_role_name
+    },
+    {
+      name  = "cpuLimit"
+      value = tostring(var.nodepool_cpu_limit)
+    },
+    {
+      name  = "consolidateAfterSeconds"
+      value = tostring(var.karpenter_consolidate_after_seconds)
+    },
+    {
+      name  = "nodeGracePeriodSeconds"
+      value = tostring(var.node_grace_period_seconds)
+    },
+  ]
 
   depends_on = [helm_release.karpenter]
 }
