@@ -29,7 +29,7 @@ resource "terraform_data" "az_check" {
 
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "~> 5.17"
+  version = "~> 6.6"
 
   depends_on = [terraform_data.az_check]
 
