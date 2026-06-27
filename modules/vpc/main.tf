@@ -49,7 +49,6 @@ module "vpc" {
 
   # IPv6 dual-stack (no-op when enable_ipv6 = false)
   enable_ipv6                                    = var.enable_ipv6
-  assign_ipv6_address_on_creation                = var.enable_ipv6
   public_subnet_assign_ipv6_address_on_creation  = var.enable_ipv6
   private_subnet_assign_ipv6_address_on_creation = var.enable_ipv6
   # Egress-Only IGW for IPv6 outbound from private subnets (NAT does not handle IPv6)

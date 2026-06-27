@@ -10,7 +10,10 @@ module "eks" {
 
   name               = var.cluster_name
   kubernetes_version = var.kubernetes_version
-  cluster_ip_family  = var.enable_ipv6 ? "ipv6" : "ipv4"
+  ip_family          = var.enable_ipv6 ? "ipv6" : "ipv4"
+
+  # Create the AmazonEKS_CNI_IPv6_Policy required by vpc-cni on IPv6 clusters
+  create_cni_ipv6_iam_policy = var.enable_ipv6
 
   # Explicitly opt into STANDARD support to avoid extended support charges
   upgrade_policy = {
