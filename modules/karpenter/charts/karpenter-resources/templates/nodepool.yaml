@@ -19,9 +19,19 @@ spec:
         - key: kubernetes.io/arch
           operator: In
           values: ["amd64"]
+        # Non-burstable families only (drop "t" to avoid CPU-credit throttling
+        # on sustained workloads like the test suite).
         - key: karpenter.k8s.aws/instance-category
           operator: In
-          values: ["m", "c", "t"]
+          values: ["c", "m"]
+        # Recent generations only.
+        - key: karpenter.k8s.aws/instance-generation
+          operator: Gt
+          values: ["2"]
+        # Larger instances for faster builds (8–16 vCPU).
+        - key: karpenter.k8s.aws/instance-cpu
+          operator: In
+          values: ["8", "16"]
       nodeClassRef:
         group: karpenter.k8s.aws
         kind: EC2NodeClass

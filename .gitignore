@@ -50,3 +50,14 @@ backend.hcl
 
 # Kiro spec/working files
 .kiro/
+
+# Environment & Secrets
+.env
+.env.*
+!.env.example
+*.key
+*.p12
+*.jks
+*.keystore
+*.credentials
+.secrets.baseline
