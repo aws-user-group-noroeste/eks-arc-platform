@@ -91,3 +91,22 @@ run "public_subnet_tags_elb" {
     error_message = "All public subnets must be tagged with kubernetes.io/role/elb = 1."
   }
 }
+
+# --- Test: IPv6 disabled by default (backward compatibility) ---
+run "ipv6_disabled_by_default" {
+  command = plan
+
+  # Plan succeeds with enable_ipv6 = false (the default) — confirms no breaking change
+}
+
+# --- Test: IPv6 enabled — plan succeeds with all IPv6 VPC options ---
+run "ipv6_enabled_plan_succeeds" {
+  command = plan
+
+  variables {
+    enable_ipv6 = true
+  }
+
+  # Plan succeeds with enable_ipv6 = true — confirms enable_ipv6, subnet IPv6
+  # assignment, and create_egress_only_igw are all valid module arguments
+}

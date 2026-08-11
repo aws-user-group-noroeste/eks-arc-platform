@@ -20,10 +20,11 @@ mock_provider "helm" {}
 override_module {
   target = module.vpc
   outputs = {
-    vpc_id             = "vpc-smoke00000000001"
-    private_subnet_ids = ["subnet-priv1", "subnet-priv2"]
-    public_subnet_ids  = ["subnet-pub1", "subnet-pub2"]
-    azs                = ["us-east-1a", "us-east-1b"]
+    vpc_id              = "vpc-smoke00000000001"
+    private_subnet_ids  = ["subnet-priv1", "subnet-priv2"]
+    public_subnet_ids   = ["subnet-pub1", "subnet-pub2"]
+    azs                 = ["us-east-1a", "us-east-1b"]
+    vpc_ipv6_cidr_block = null
   }
 }
 

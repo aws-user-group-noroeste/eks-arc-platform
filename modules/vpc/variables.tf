@@ -17,3 +17,9 @@ variable "nat_gateway_count" {
   type        = number
   default     = 1
 }
+
+variable "enable_ipv6" {
+  description = "Assign an Amazon-provided IPv6 /56 CIDR to the VPC and /64 CIDRs to each subnet. Required for EKS ip_family=ipv6."
+  type        = bool
+  default     = false
+}

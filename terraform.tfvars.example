@@ -33,6 +33,12 @@ vpc_cidr = "10.0.0.0/16"
 # Number of NAT gateways (one per AZ for HA, or 1 for cost savings)
 nat_gateway_count = 1
 
+# Enable IPv6 dual-stack (VPC subnets + EKS ip_family=ipv6)
+# WARNING: ip_family cannot be changed after cluster creation. Enabling this on
+# an existing cluster requires a full destroy and recreate.
+# Default: false (IPv4-only, backward compatible)
+enable_ipv6 = false
+
 # -----------------------------------------------------------------------------
 # EKS Cluster
 # -----------------------------------------------------------------------------

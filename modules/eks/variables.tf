@@ -42,3 +42,9 @@ variable "terraform_execution_role_arn" {
   description = "ARN of the Terraform execution role (needs K8s API access for Helm/manifest resources)."
   type        = string
 }
+
+variable "enable_ipv6" {
+  description = "Set EKS cluster ip_family to ipv6. Must match the VPC's enable_ipv6 setting. Cannot be changed after cluster creation."
+  type        = bool
+  default     = false
+}

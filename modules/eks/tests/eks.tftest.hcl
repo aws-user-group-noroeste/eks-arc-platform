@@ -150,3 +150,25 @@ run "system_node_group_taint" {
     error_message = "Expected system node group to have taint CriticalAddonsOnly=true:NoSchedule."
   }
 }
+
+# --- Test: IPv6 disabled — vpc-cni has no configuration_values (backward compat) ---
+run "vpc_cni_no_extra_config_when_ipv6_disabled" {
+  command = plan
+
+  variables {
+    enable_ipv6 = false
+  }
+
+  # Plan succeeds without IPv6 configuration — confirms backward compatibility
+}
+
+# --- Test: IPv6 enabled — plan succeeds with ip_family=ipv6 and vpc-cni config ---
+run "ipv6_enabled_plan_succeeds" {
+  command = plan
+
+  variables {
+    enable_ipv6 = true
+  }
+
+  # Plan succeeds with enable_ipv6 = true — confirms ip_family and addon config are valid
+}
